@@ -106,17 +106,21 @@ input[type=text], select {
   
   .title {
     align-self: flex-end;
-    color: inherit;
+    color: honeydew;
     display: block;
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    font-size: 24px;
+    font-size: 22px;
     line-height: normal;
     overflow: hidden;
     -webkit-transform-origin: 149px 48px;
     transform-origin: 149px 48px;
     margin: 0;
+
+    color: #333333;
+    text-shadow: 1px 1px 0px #FFFFFF, 1px 0px 0px rgba(0,0,0,0.15);
+    color:white;
   }
   
   
