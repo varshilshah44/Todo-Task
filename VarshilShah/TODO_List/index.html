@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="Scripts/Dom.js" defer></script>
+    <script src="Scripts/Todo.js" defer></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <template id="template">
+      <li class="dd-item" data-id="1">
+        <h3 class="title dd-handle"></h3>
+      </li>
+    </template>
+    <h2 class="heading">TODO List</h2>
+    <hr />
+    <br /><br />
+    <div id="addtasks">
+      <input type="text" placeholder="Enter a Main Task" />
+    </div>
+
+    <div id="p1" class="mdl-progress mdl-js-progress"></div>
+    <div class="dd">
+      <ol class="kanban To-do">
+        <div class="kanban__title">
+          <h2>To do</h2>
+        </div>
+      </ol>
+      <ol class="kanban progress">
+        <h2>In progress</h2>
+      </ol>
+      <ol class="kanban Done">
+        <h2>Done</h2>
+      </ol>
+    </div>
+  </body>
+</html>
+<!-- <li class="dd-item" data-id="1">
+    <h3 class="title dd-handle"></h3>
+  </li>
+ -->
