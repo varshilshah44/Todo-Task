@@ -16,22 +16,30 @@ function inputEventHandler(tasktype, input) {
   return inputPromise;
 }
 
-function allowDrop(li) {
+function allowDropFromTodo(li, domId) {
   let dropPromise = new Promise(function (resolve, reject) {
     li.addEventListener("dragstart", (event) => {
-      resolve(event);
+      li.addEventListener("dragleave", (event1) => {
+        progressOl.append(li);
+        const task = taskArr.find((item) => item.domId === domId);
+        task.taskStatus = "INPROGRESS";
+        resolve(event1);
+      });
     });
   });
   return dropPromise;
 }
 
-function dragOver(domId) {
+function allowDropFromInprogress(li, domId) {
   let dropPromise = new Promise(function (resolve, reject) {
-    progressOl.addEventListener("dragleave", (event) => {
-      progressOl.append(itemLi);
-      const task = taskArr.find(item => item.domId === domId);
-      task.taskStatus = "INPROGRESS";
-      resolve(event);
+    li.addEventListener("dragstart", (event) => {
+      doneOl.addEventListener("dragleave", (event1) => {
+        doneOl.append(li);
+        const task = taskArr.find((item) => item.domId === domId);
+        task.taskStatus = "DONE";
+        li.draggable = !li.draggable;
+        resolve(event1);
+      });
     });
   });
   return dropPromise;
@@ -55,8 +63,7 @@ async function AddSubtask(taskId, subtaskcount) {
     taskObj.subtaskName = event.target.value;
     taskObj.domId = taskArr[taskArr.length - 1].domId + 1;
     taskArr.push(taskObj);
-    //    localStorage.setItem("task", JSON.stringify(taskArr));
-
+  //localStorage.setItem("task", JSON.stringify(taskArr));
     const maintask = taskArr.find((item) => item.taskId === taskId);
     AddingItemintoDom(taskObj.subtaskName, taskObj.domId, maintask.taskName);
   }
@@ -75,9 +82,8 @@ async function AddingItemintoDom(taskName, domId, maintaskname) {
     itemLi.querySelector("h3").textContent = taskName;
   }
   todoOl.appendChild(itemLi);
-  const event = await allowDrop(itemLi);
-  const event2 = await dragOver(domId);
-  console.log(taskArr)
+  let event = await allowDropFromTodo(itemLi, domId);
+  let event3 = await allowDropFromInprogress(itemLi, domId);
 }
 
 async function App() {
