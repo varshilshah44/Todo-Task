@@ -23,6 +23,8 @@ function allowDropFromTodo(li, domId) {
         progressOl.append(li);
         const task = taskArr.find((item) => item.domId === domId);
         task.taskStatus = "INPROGRESS";
+        localStorage.removeItem("tasks");
+        localStorage.setItem("tasks",JSON.stringify(taskArr));
         resolve(event1);
       });
     });
@@ -38,11 +40,25 @@ function allowDropFromInprogress(li, domId) {
         const task = taskArr.find((item) => item.domId === domId);
         task.taskStatus = "DONE";
         li.draggable = !li.draggable;
+        li.querySelector("#deletebtn").style.display = "none";
+        li.querySelector("#updatebtn").style.display = "none";
+        
+        localStorage.removeItem("tasks");
+        localStorage.setItem("tasks",JSON.stringify(taskArr));
         resolve(event1);
       });
     });
   });
   return dropPromise;
+}
+
+function deleteItem(deleteBtn) {
+  let deletePromise = new Promise(function (resolve, reject) {
+    deleteBtn.addEventListener("click", (event) => {
+      resolve(event);
+    });
+  });
+  return deletePromise;
 }
 
 async function AddSubtask(taskId, subtaskcount) {
@@ -57,21 +73,23 @@ async function AddSubtask(taskId, subtaskcount) {
     let taskObj = {
       subtaskId: 0,
       subtaskName: "",
+      subtaskPriority: "High",
       taskStatus: "TODO",
     };
     taskObj.subtaskId = taskId;
     taskObj.subtaskName = event.target.value;
     taskObj.domId = taskArr[taskArr.length - 1].domId + 1;
     taskArr.push(taskObj);
-  //localStorage.setItem("task", JSON.stringify(taskArr));
+    localStorage.setItem("tasks", JSON.stringify(taskArr));
     const maintask = taskArr.find((item) => item.taskId === taskId);
     AddingItemintoDom(taskObj.subtaskName, taskObj.domId, maintask.taskName);
+    console.log(taskArr);
   }
 }
 
 async function AddingItemintoDom(taskName, domId, maintaskname) {
-  console.log(domId);
   const todoData = document.importNode(template.content, "content");
+  const deleteBtn = todoData.querySelector("#deletebtn");
   const itemLi = todoData.querySelector("li");
   itemLi.id = domId;
   itemLi.style.backgroundColor = "red";
@@ -81,7 +99,26 @@ async function AddingItemintoDom(taskName, domId, maintaskname) {
   } else {
     itemLi.querySelector("h3").textContent = taskName;
   }
-  todoOl.appendChild(itemLi);
+  const task = taskArr.find((item) => item.domId === domId);
+  if (task.taskStatus === "TODO") {
+    todoOl.appendChild(itemLi);
+  }
+  if (task.taskStatus === "INPROGRESS") {
+    progressOl.appendChild(itemLi);
+  }
+  if (task.taskStatus === "DONE") {
+    doneOl.appendChild(itemLi);
+    itemLi.querySelector("#deletebtn").style.display = "none";
+    itemLi.querySelector("#updatebtn").style.display = "none";
+    
+  }
+
+  const deletePromise = deleteItem(deleteBtn);
+  deletePromise.then((event) => {
+    const taskIndex = taskArr.findIndex((item) => item.domId == domId);
+    taskArr.splice(taskIndex, 1);
+    todoOl.removeChild(itemLi);
+  });
   let event = await allowDropFromTodo(itemLi, domId);
   let event3 = await allowDropFromInprogress(itemLi, domId);
 }
@@ -93,13 +130,12 @@ async function App() {
     taskName: "",
     taskPriority: "High",
     taskStatus: "TODO",
-    domId: 0,
   };
-  taskObj.taskId = taskObj.taskId + 1;
+  taskObj.taskId = Math.random();
   taskObj.taskName = event.target.value;
-  taskObj.domId = taskObj.domId + 1;
+  taskObj.domId = taskObj.taskId;
   taskArr.push(taskObj);
-  // localStorage.setItem("task", JSON.stringify(taskArr));
+  localStorage.setItem("tasks", JSON.stringify(taskArr));
 
   const subtaskPrompt = prompt("How many Subtask You want to add?", "0");
   if (parseInt(subtaskPrompt) > 0 && parseInt(subtaskPrompt) <= 10) {
@@ -113,20 +149,26 @@ async function App() {
     clearData(taskInput);
   }
 }
-/* function getFromStorage() {
-  const tasks = JSON.parse(localStorage.getItem("task"));
-  if (tasks) {
-    for (let i = 0; i < tasks.length; i++) {
-      if (tasks[i].subtaskName) {
-        const maintask = tasks.find(
-          (item) => item.taskId === tasks[i].subtaskId
+function getDataFromStorage() {
+  const storageArr = JSON.parse(localStorage.getItem("tasks"));
+  if (storageArr) {
+    taskArr = storageArr;
+    for (let i = 0; i < storageArr.length; i++) {
+      if (storageArr[i].subtaskId) {
+        const findMainTask = storageArr.find(
+          (item) => item.taskId === storageArr[i].subtaskId
         );
-        AddingItemintoDom(tasks[i].subtaskName, maintask.taskName);
+        AddingItemintoDom(
+          storageArr[i].subtaskName,
+          storageArr[i].domId,
+          findMainTask.taskName
+        );
       } else {
-        AddingItemintoDom(tasks[i].taskName);
+        AddingItemintoDom(storageArr[i].taskName, storageArr[i].domId);
       }
     }
   }
 }
-getFromStorage(); */
+
+getDataFromStorage();
 App();

@@ -7,15 +7,22 @@
     <script src="Scripts/Dom.js" defer></script>
     <script src="Scripts/Todo.js" defer></script>
     <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   </head>
   <body>
     <template id="template">
       <li draggable="true" class="dd-item" data-id="1">
-        <h3 class="title dd-handle"></h3>
-        <button>Delete</button>
-        <button>Edit</button>
-        
-      </li>
+        <h3 class="title dd-handle"></h3><br><br><br>
+    <!--     <span style="float:right;" class="glyphicon glyphicon-trash"></span>&nbsp;
+        <span style="float:right;" class="glyphicon glyphicon-pencil"></span>
+     -->  
+     <button id="deletebtn" type="button" class="btn btn-default btn-sm">
+        <span class="glyphicon glyphicon-trash"></span>Delete 
+      </button>
+      <button id="updatebtn" type="button" class="btn btn-default btn-sm">
+        <span class="glyphicon glyphicon-pencil"></span>Update
+      </button>
+    </li>
     </template>
     <h2 class="heading">TODO List</h2>
     <hr />
@@ -30,7 +37,7 @@
         <div class="kanban__title">
           <h2>To do</h2>
         </div>
-         </ol>
+      </ol>
       <ol id="progress" class="kanban progress">
         <h2>In progress</h2>
       </ol>
