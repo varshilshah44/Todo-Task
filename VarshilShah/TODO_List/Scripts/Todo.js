@@ -1,6 +1,5 @@
 let taskArr = [];
 
-
 function clearData(taskInput) {
   taskInput.value = "";
   App();
@@ -15,6 +14,27 @@ function inputEventHandler(tasktype, input) {
     });
   });
   return inputPromise;
+}
+
+function allowDrop(li) {
+  let dropPromise = new Promise(function (resolve, reject) {
+    li.addEventListener("dragstart", (event) => {
+      resolve(event);
+    });
+  });
+  return dropPromise;
+}
+
+function dragOver(domId) {
+  let dropPromise = new Promise(function (resolve, reject) {
+    progressOl.addEventListener("dragleave", (event) => {
+      progressOl.append(itemLi);
+      const task = taskArr.find(item => item.domId === domId);
+      task.taskStatus = "INPROGRESS";
+      resolve(event);
+    });
+  });
+  return dropPromise;
 }
 
 async function AddSubtask(taskId, subtaskcount) {
@@ -33,27 +53,31 @@ async function AddSubtask(taskId, subtaskcount) {
     };
     taskObj.subtaskId = taskId;
     taskObj.subtaskName = event.target.value;
+    taskObj.domId = taskArr[taskArr.length - 1].domId + 1;
     taskArr.push(taskObj);
-    localStorage.setItem("task", JSON.stringify(taskArr));
+    //    localStorage.setItem("task", JSON.stringify(taskArr));
 
-    const maintask = taskArr.find(item => item.taskId === taskId);
-    AddingItemintoDom(taskObj.subtaskName,maintask.taskName);
-   
+    const maintask = taskArr.find((item) => item.taskId === taskId);
+    AddingItemintoDom(taskObj.subtaskName, taskObj.domId, maintask.taskName);
   }
-  
 }
 
-function AddingItemintoDom(taskName,maintaskname) {
+async function AddingItemintoDom(taskName, domId, maintaskname) {
+  console.log(domId);
   const todoData = document.importNode(template.content, "content");
   const itemLi = todoData.querySelector("li");
+  itemLi.id = domId;
   itemLi.style.backgroundColor = "red";
-  if(maintaskname){
-  itemLi.querySelector("h3").textContent = taskName + "(" + maintaskname + ")";
-  }
-  else{
-    itemLi.querySelector("h3").textContent = taskName;   
+  if (maintaskname) {
+    itemLi.querySelector("h3").textContent =
+      taskName + "(" + maintaskname + ")";
+  } else {
+    itemLi.querySelector("h3").textContent = taskName;
   }
   todoOl.appendChild(itemLi);
+  const event = await allowDrop(itemLi);
+  const event2 = await dragOver(domId);
+  console.log(taskArr)
 }
 
 async function App() {
@@ -63,37 +87,40 @@ async function App() {
     taskName: "",
     taskPriority: "High",
     taskStatus: "TODO",
+    domId: 0,
   };
   taskObj.taskId = taskObj.taskId + 1;
   taskObj.taskName = event.target.value;
+  taskObj.domId = taskObj.domId + 1;
   taskArr.push(taskObj);
-  localStorage.setItem("task", JSON.stringify(taskArr));
- 
+  // localStorage.setItem("task", JSON.stringify(taskArr));
+
   const subtaskPrompt = prompt("How many Subtask You want to add?", "0");
   if (parseInt(subtaskPrompt) > 0 && parseInt(subtaskPrompt) <= 10) {
     AddSubtask(taskObj.taskId, parseInt(subtaskPrompt));
-    AddingItemintoDom(taskObj.taskName);
+    AddingItemintoDom(taskObj.taskName, taskObj.domId);
   } else if (parseInt(subtaskPrompt) === 0) {
-    AddingItemintoDom(taskObj.taskName);
+    AddingItemintoDom(taskObj.taskName, taskObj.domId);
     clearData(taskInput);
   } else {
     alert("Please enter correctly");
     clearData(taskInput);
   }
 }
-function getFromStorage(){
-    const tasks = JSON.parse(localStorage.getItem('task'));
-    if(tasks){
-    for(let i=0;i<tasks.length;i++){
-      if(tasks[i].subtaskName){
-        const maintask = tasks.find(item => item.taskId === tasks[i].subtaskId);
-        AddingItemintoDom(tasks[i].subtaskName,maintask.taskName);
-      }
-      else{
+/* function getFromStorage() {
+  const tasks = JSON.parse(localStorage.getItem("task"));
+  if (tasks) {
+    for (let i = 0; i < tasks.length; i++) {
+      if (tasks[i].subtaskName) {
+        const maintask = tasks.find(
+          (item) => item.taskId === tasks[i].subtaskId
+        );
+        AddingItemintoDom(tasks[i].subtaskName, maintask.taskName);
+      } else {
         AddingItemintoDom(tasks[i].taskName);
       }
     }
   }
 }
-getFromStorage();
+getFromStorage(); */
 App();

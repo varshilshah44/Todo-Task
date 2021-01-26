@@ -145,6 +145,7 @@ input[type=text], select {
     border-radius: 3px;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
+    cursor: pointer;
   }
   
   .dd-item:hover {
