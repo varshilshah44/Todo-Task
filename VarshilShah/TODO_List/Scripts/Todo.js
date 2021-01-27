@@ -1,8 +1,14 @@
 let taskArr = [];
+let logArr = [];
 
 function clearData(taskInput) {
   taskInput.value = "";
   App();
+}
+
+function resetStorage() {
+  localStorage.removeItem("tasks");
+  localStorage.setItem("tasks", JSON.stringify(taskArr));
 }
 
 function inputEventHandler(tasktype, input) {
@@ -23,8 +29,9 @@ function allowDropFromTodo(li, domId) {
         progressOl.append(li);
         const task = taskArr.find((item) => item.domId === domId);
         task.taskStatus = "INPROGRESS";
-        localStorage.removeItem("tasks");
-        localStorage.setItem("tasks",JSON.stringify(taskArr));
+      //  li.querySelector("#deletebtn").style.display = "none";
+      //  li.querySelector("#updatebtn").style.display = "none";
+        resetStorage();
         resolve(event1);
       });
     });
@@ -42,9 +49,7 @@ function allowDropFromInprogress(li, domId) {
         li.draggable = !li.draggable;
         li.querySelector("#deletebtn").style.display = "none";
         li.querySelector("#updatebtn").style.display = "none";
-        
-        localStorage.removeItem("tasks");
-        localStorage.setItem("tasks",JSON.stringify(taskArr));
+        resetStorage();
         resolve(event1);
       });
     });
@@ -61,38 +66,64 @@ function deleteItem(deleteBtn) {
   return deletePromise;
 }
 
+function updateItem(updateBtn) {
+  let updatePromise = new Promise(function (resolve, reject) {
+    updateBtn.addEventListener("click", (event) => {
+      resolve(event);
+    });
+  });
+  return updatePromise;
+}
+
 async function AddSubtask(taskId, subtaskcount) {
   for (let i = 0; i < subtaskcount; i++) {
     const subinput = document.createElement("input");
     subinput.type = "text";
     subinput.className = "input1";
     subinput.placeholder = "Enter a Sub Task" + (i + 1);
-    main.insertAdjacentElement("afterend", subinput);
+    main.append(subinput);
 
     const event = await inputEventHandler("sub", subinput);
     let taskObj = {
       subtaskId: 0,
       subtaskName: "",
-      subtaskPriority: "High",
+      taskPriority: "HIGH",
       taskStatus: "TODO",
     };
+
     taskObj.subtaskId = taskId;
     taskObj.subtaskName = event.target.value;
     taskObj.domId = taskArr[taskArr.length - 1].domId + 1;
+    taskObj.taskTime = new Date();
+    const priority = prompt(
+      "Please enter the priority [high,medium,low]",
+      "high"
+    );
+    taskObj.taskPriority = priority.toUpperCase();
     taskArr.push(taskObj);
+    logArr.push("Sub Task : " + taskObj.subtaskName + " is added");
     localStorage.setItem("tasks", JSON.stringify(taskArr));
     const maintask = taskArr.find((item) => item.taskId === taskId);
     AddingItemintoDom(taskObj.subtaskName, taskObj.domId, maintask.taskName);
-    console.log(taskArr);
+    if (i + 1 === subtaskcount) {
+      const inputAll = main.querySelectorAll("input");
+      for (let i of inputAll) {
+        if (i.className === "input1") {
+          main.removeChild(i);
+        }
+      }
+      clearData(taskInput);
+    }
   }
 }
 
 async function AddingItemintoDom(taskName, domId, maintaskname) {
   const todoData = document.importNode(template.content, "content");
   const deleteBtn = todoData.querySelector("#deletebtn");
+  const updateBtn = todoData.querySelector("#updatebtn");
+
   const itemLi = todoData.querySelector("li");
   itemLi.id = domId;
-  itemLi.style.backgroundColor = "red";
   if (maintaskname) {
     itemLi.querySelector("h3").textContent =
       taskName + "(" + maintaskname + ")";
@@ -100,27 +131,102 @@ async function AddingItemintoDom(taskName, domId, maintaskname) {
     itemLi.querySelector("h3").textContent = taskName;
   }
   const task = taskArr.find((item) => item.domId === domId);
+
+  if (task.taskPriority == "HIGH") {
+    itemLi.style.backgroundColor = "red";
+  }
+  if (task.taskPriority == "MEDIUM") {
+    itemLi.style.backgroundColor = "orange";
+  }
+  if (task.taskPriority == "LOW") {
+    itemLi.style.backgroundColor = "blue";
+  }
+
   if (task.taskStatus === "TODO") {
     todoOl.appendChild(itemLi);
   }
   if (task.taskStatus === "INPROGRESS") {
     progressOl.appendChild(itemLi);
+   // itemLi.querySelector("#deletebtn").style.display = "none";
+   // itemLi.querySelector("#updatebtn").style.display = "none";
   }
   if (task.taskStatus === "DONE") {
     doneOl.appendChild(itemLi);
     itemLi.querySelector("#deletebtn").style.display = "none";
     itemLi.querySelector("#updatebtn").style.display = "none";
-    
+    itemLi.draggable = false;
   }
 
   const deletePromise = deleteItem(deleteBtn);
   deletePromise.then((event) => {
     const taskIndex = taskArr.findIndex((item) => item.domId == domId);
-    taskArr.splice(taskIndex, 1);
-    todoOl.removeChild(itemLi);
+    if (taskArr[taskIndex].taskName) {
+      for (let item of taskArr) {
+        if (item.subtaskId === taskArr[taskIndex].taskId) {
+          const subtaskIndex = taskArr.findIndex(
+            (task) => task.domId == item.domId
+          );
+          taskArr.splice(subtaskIndex, 1);
+          const deleteli = document.getElementById(item.domId);
+          todoOl.removeChild(deleteli);
+          logArr.push("Task : " + item.subtaskName + " is deleted");
+        }
+      }
+      taskArr.splice(taskIndex, 1);
+      todoOl.removeChild(itemLi);
+      logArr.push(
+        "Task : " + itemLi.querySelector("h3").textContent + " is deleted"
+      );
+      resetStorage();
+    } else {
+      logArr.push("Task : " + taskArr[taskIndex].subtaskName + " is deleted");
+      taskArr.splice(taskIndex, 1);
+      todoOl.removeChild(itemLi);
+
+      resetStorage();
+    }
   });
+
+  const updatePromise = updateItem(updateBtn);
+  updatePromise.then((event) => {
+    const taskIndex = taskArr.findIndex((item) => item.domId == domId);
+    let newtaskName;
+    if (taskArr[taskIndex].subtaskName) {
+      newtaskName = prompt(
+        "Enter a new task Name",
+        `${taskArr[taskIndex].subtaskName}`
+      );
+      taskArr[taskIndex].subtaskName = newtaskName;
+      itemLi.querySelector("h3").textContent =
+        newtaskName + "(" + maintaskname + ")";
+    } else {
+      newtaskName = prompt(
+        "Enter a new subtask Name",
+        `${taskArr[taskIndex].taskName}`
+      );
+      logArr.push(
+        "Task : " +
+          itemLi.querySelector("h3").textContent +
+          " is updated to " +
+          newtaskName
+      );
+      taskArr[taskIndex].taskName = newtaskName;
+      itemLi.querySelector("h3").textContent = newtaskName;
+    }
+    resetStorage();
+  });
+
   let event = await allowDropFromTodo(itemLi, domId);
+  logArr.push(
+    "Task : " +
+      itemLi.querySelector("h3").textContent +
+      " is moved into Inprogress"
+  );
   let event3 = await allowDropFromInprogress(itemLi, domId);
+  logArr.push(
+    "Task : " + itemLi.querySelector("h3").textContent + " is moved into Done"
+  );
+  
 }
 
 async function App() {
@@ -128,27 +234,47 @@ async function App() {
   let taskObj = {
     taskId: 0,
     taskName: "",
-    taskPriority: "High",
+    taskPriority: "HIGH",
     taskStatus: "TODO",
   };
   taskObj.taskId = Math.random();
   taskObj.taskName = event.target.value;
   taskObj.domId = taskObj.taskId;
-  taskArr.push(taskObj);
-  localStorage.setItem("tasks", JSON.stringify(taskArr));
-
-  const subtaskPrompt = prompt("How many Subtask You want to add?", "0");
-  if (parseInt(subtaskPrompt) > 0 && parseInt(subtaskPrompt) <= 10) {
-    AddSubtask(taskObj.taskId, parseInt(subtaskPrompt));
-    AddingItemintoDom(taskObj.taskName, taskObj.domId);
-  } else if (parseInt(subtaskPrompt) === 0) {
-    AddingItemintoDom(taskObj.taskName, taskObj.domId);
+  taskObj.taskTime = new Date();
+  const priority = prompt(
+    "Please enter the priority [high,medium,low]",
+    "high"
+  );
+  if (
+    priority != null &&
+    priority.toUpperCase() != "HIGH" &&
+    priority.toUpperCase() != "LOW" &&
+    priority.toUpperCase() != "MEDIUM"
+  ) {
+    alert("Please Enter Correctly");
     clearData(taskInput);
   } else {
-    alert("Please enter correctly");
-    clearData(taskInput);
+    taskObj.taskPriority = priority.toUpperCase();
+    taskArr.push(taskObj);
+
+    const subtaskPrompt = prompt("How many Subtask You want to add?", "0");
+    if (parseInt(subtaskPrompt) > 0 && parseInt(subtaskPrompt) <= 10) {
+      localStorage.setItem("tasks", JSON.stringify(taskArr));
+      logArr.push("Main Task : " + taskObj.taskName + " is added");
+      AddSubtask(taskObj.taskId, parseInt(subtaskPrompt));
+      AddingItemintoDom(taskObj.taskName, taskObj.domId);
+    } else if (parseInt(subtaskPrompt) === 0) {
+      localStorage.setItem("tasks", JSON.stringify(taskArr));
+      logArr.push("Main Task : " + taskObj.taskName + " is added");
+      AddingItemintoDom(taskObj.taskName, taskObj.domId);
+      clearData(taskInput);
+    } else {
+      alert("Please enter correctly");
+      clearData(taskInput);
+    }
   }
 }
+
 function getDataFromStorage() {
   const storageArr = JSON.parse(localStorage.getItem("tasks"));
   if (storageArr) {
@@ -170,5 +296,93 @@ function getDataFromStorage() {
   }
 }
 
+function sortingHandler(priority, task, status) {
+  let promise = new Promise(function (resolve, reject) {
+    if (
+      task.taskPriority == priority &&
+      task.subtaskId &&
+      task.taskStatus === status
+    ) {
+      const findMainTask = taskArr.find(
+        (item) => item.taskId === task.subtaskId
+      );
+      AddingItemintoDom(task.subtaskName, task.domId, findMainTask.taskName);
+    }
+    if (
+      task.taskPriority == priority &&
+      task.taskId &&
+      task.taskStatus === status
+    ) {
+      AddingItemintoDom(task.taskName, task.domId);
+    }
+    resolve("Success");
+  });
+  return promise;
+}
+
+async function sortingPriorityHandler(status) {
+  for (let task of taskArr) {
+    await sortingHandler("HIGH", task, status);
+  }
+  for (let task of taskArr) {
+    await sortingHandler("MEDIUM", task, status);
+  }
+  for (let task of taskArr) {
+    await sortingHandler("LOW", task, status);
+  }
+}
+
+function sorting() {
+  todoSortBtn.addEventListener("click", async () => {
+    const allLi = todoOl.querySelectorAll("li");
+    for (let li of allLi) {
+      todoOl.removeChild(li);
+    }
+    sortingPriorityHandler("TODO");
+  });
+  progressSortBtn.addEventListener("click", async () => {
+    const allLi = progressOl.querySelectorAll("li");
+    for (let li of allLi) {
+      progressOl.removeChild(li);
+    }
+    sortingPriorityHandler("INPROGRESS");
+  });
+  doneSortBtn.addEventListener("click", async () => {
+    const allLi = doneOl.querySelectorAll("li");
+    for (let li of allLi) {
+      doneOl.removeChild(li);
+    }
+    sortingPriorityHandler("DONE");
+  });
+}
+
+function onlog() {
+  const allH4 = log.querySelectorAll("h4");
+  for (let h4 of allH4) {
+    console.log(h4);
+    log.removeChild(h4);
+  }
+  if (log.className === "log") {
+    log.className = "log1";
+    if (logArr.length <= 10) {
+      for (let i = 0; i < logArr.length; i++) {
+        const h4 = document.createElement("h4");
+        h4.textContent = logArr[i];
+        log.append(h4);
+      }
+    } else {
+      let temp = logArr.length - 10;
+      for (let i = temp; i < logArr.length; i++) {}
+    }
+  } else {
+    log.className = "log";
+  }
+}
+
+search.addEventListener("keyup",(event)=>{
+    const regx = new RegExp(event.target.value);
+})
+
 getDataFromStorage();
 App();
+sorting();

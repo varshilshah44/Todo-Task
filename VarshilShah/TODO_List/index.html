@@ -13,9 +13,7 @@
     <template id="template">
       <li draggable="true" class="dd-item" data-id="1">
         <h3 class="title dd-handle"></h3><br><br><br>
-    <!--     <span style="float:right;" class="glyphicon glyphicon-trash"></span>&nbsp;
-        <span style="float:right;" class="glyphicon glyphicon-pencil"></span>
-     -->  
+
      <button id="deletebtn" type="button" class="btn btn-default btn-sm">
         <span class="glyphicon glyphicon-trash"></span>Delete 
       </button>
@@ -24,27 +22,36 @@
       </button>
     </li>
     </template>
-    <h2 class="heading">TODO List</h2>
+    <h2 class="heading">TODO List
+        <button onclick="onlog()" style="float: right;margin-right:10px;" id="logbtn">Display Logs</button>
+    </h2>
+    <div class="log" id="logid">
+    </div>
     <hr />
     <br /><br />
     <div id="addtasks">
       <input type="text" placeholder="Enter a Main Task" />
     </div>
-
-    <div id="p1" class="mdl-progress mdl-js-progress"></div>
+    <div id="p1" class="mdl-progress mdl-js-progress">
+    </div>
+    <input type="search" id="search" placeholder="search">
+   
     <div class="dd">
-      <ol id="todo" class="kanban To-do">
+      <ol id="todo" class="kanban To-do" style="position: relative;"> 
         <div class="kanban__title">
-          <h2>To do</h2>
+          <h3>To do
+          <button id="todosort" style="float: right;">Sort</button></h3>
         </div>
       </ol>
-      <ol id="progress" class="kanban progress">
-        <h2>In progress</h2>
+      <ol id="progress" class="kanban progress" style="position: relative;">
+        <h3>In progress
+            <button id="progresssort" style="float: right;">Sort</button></h3>
+        </h3>
       </ol>
-      <ol id="done" class="kanban Done">
-        <h2>Done</h2>
+      <ol id="done" class="kanban Done" style="position: relative;">
+        <h3>Done<button id="donesort" style="float: right;">Sort</button></h3>
       </ol>
-    </div>
+    </div><br>
   </body>
 </html>
 <!-- <li class="dd-item" data-id="1">

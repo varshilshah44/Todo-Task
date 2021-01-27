@@ -24,6 +24,17 @@ input[type=text], select {
     border-radius: 4px;
     box-sizing: border-box;
 }
+input[type=search], select {
+    width: 20%;
+    padding: 12px 20px;
+    position: absolute;
+    margin: 60px 1050px;
+    display: inline-block;
+    border: 2px solid #ccc;
+    border-color:green;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
 #taskbtn{
     width: 15%;
     padding: 12px 20px;
@@ -41,6 +52,24 @@ input[type=text], select {
 }
 #taskbtn:hover{
     background-color:lightblue;
+}
+.log{
+    border:1px solid black;
+    height:400px;
+    width:500px;
+    float:right;
+    margin-right:10px;
+    margin-top:10px;
+    display:none;
+}
+.log1{
+    border:1px solid black;
+    height:400px;
+    width:500px;
+    float:right;
+    margin-right:10px;
+    margin-top:10px;
+    display:block;
 }
 
   .dd {
@@ -151,7 +180,4 @@ input[type=text], select {
   .dd-item:hover {
     background: #fff;
   }
-  
-  
-  
   
