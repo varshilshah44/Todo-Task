@@ -284,7 +284,6 @@ async function App() {
 
 function getDataFromStorage() {
   const storageArr = JSON.parse(localStorage.getItem("tasks"));
-  console.log(storageArr);
   if (storageArr) {
     taskArr = storageArr;
     for (let i = 0; i < storageArr.length; i++) {
