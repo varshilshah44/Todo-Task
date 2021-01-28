@@ -48,7 +48,7 @@ function allowDropFromInprogress(li, domId) {
         doneOl.append(li);
         const task = taskArr.find((item) => item.domId === domId);
         task.taskStatus = "DONE";
-        //    li.querySelector("#deletebtn").style.display = "none";
+        li.querySelector("#deletebtn").style.display = "none";
         li.querySelector("#updatebtn").style.display = "none";
         resetStorage();
         resolve(event1);
@@ -141,6 +141,7 @@ async function AddingItemintoDom(taskName, domId, maintaskname) {
     itemLi.draggable = false;
     doneOl.appendChild(itemLi);
     itemLi.querySelector("#updatebtn").style.display = "none";
+    itemLi.querySelector("#deletebtn").style.display = "none";
   }
 
   const deletePromise = deleteItem(deleteBtn);
