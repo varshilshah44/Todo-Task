@@ -29,8 +29,8 @@ function allowDropFromTodo(li, domId) {
         progressOl.append(li);
         const task = taskArr.find((item) => item.domId === domId);
         task.taskStatus = "INPROGRESS";
-      //  li.querySelector("#deletebtn").style.display = "none";
-      //  li.querySelector("#updatebtn").style.display = "none";
+        //  li.querySelector("#deletebtn").style.display = "none";
+        //  li.querySelector("#updatebtn").style.display = "none";
         resetStorage();
         resolve(event1);
       });
@@ -43,10 +43,10 @@ function allowDropFromInprogress(li, domId) {
   let dropPromise = new Promise(function (resolve, reject) {
     li.addEventListener("dragstart", (event) => {
       doneOl.addEventListener("dragleave", (event1) => {
+        li.draggable = false;
         doneOl.append(li);
         const task = taskArr.find((item) => item.domId === domId);
         task.taskStatus = "DONE";
-        li.draggable = !li.draggable;
         li.querySelector("#deletebtn").style.display = "none";
         li.querySelector("#updatebtn").style.display = "none";
         resetStorage();
@@ -134,27 +134,23 @@ async function AddingItemintoDom(taskName, domId, maintaskname) {
 
   if (task.taskPriority == "HIGH") {
     itemLi.style.backgroundColor = "red";
-  }
-  if (task.taskPriority == "MEDIUM") {
+  } else if (task.taskPriority == "MEDIUM") {
     itemLi.style.backgroundColor = "orange";
-  }
-  if (task.taskPriority == "LOW") {
+  } else {
     itemLi.style.backgroundColor = "blue";
   }
 
   if (task.taskStatus === "TODO") {
     todoOl.appendChild(itemLi);
-  }
-  if (task.taskStatus === "INPROGRESS") {
+  } else if (task.taskStatus === "INPROGRESS") {
     progressOl.appendChild(itemLi);
-   // itemLi.querySelector("#deletebtn").style.display = "none";
-   // itemLi.querySelector("#updatebtn").style.display = "none";
-  }
-  if (task.taskStatus === "DONE") {
+    // itemLi.querySelector("#deletebtn").style.display = "none";
+    // itemLi.querySelector("#updatebtn").style.display = "none";
+  } else {
+    itemLi.draggable = false;
     doneOl.appendChild(itemLi);
     itemLi.querySelector("#deletebtn").style.display = "none";
     itemLi.querySelector("#updatebtn").style.display = "none";
-    itemLi.draggable = false;
   }
 
   const deletePromise = deleteItem(deleteBtn);
@@ -216,17 +212,20 @@ async function AddingItemintoDom(taskName, domId, maintaskname) {
     resetStorage();
   });
 
-  let event = await allowDropFromTodo(itemLi, domId);
-  logArr.push(
-    "Task : " +
-      itemLi.querySelector("h3").textContent +
-      " is moved into Inprogress"
-  );
-  let event3 = await allowDropFromInprogress(itemLi, domId);
-  logArr.push(
-    "Task : " + itemLi.querySelector("h3").textContent + " is moved into Done"
-  );
-  
+  if (task.taskStatus === "TODO") {
+    let event = await allowDropFromTodo(itemLi, domId);
+    logArr.push(
+      "Task : " +
+        itemLi.querySelector("h3").textContent +
+        " is moved into Inprogress"
+    );
+  }
+  if (task.taskStatus === "INPROGRESS") {
+    let event3 = await allowDropFromInprogress(itemLi, domId);
+    logArr.push(
+      "Task : " + itemLi.querySelector("h3").textContent + " is moved into Done"
+    );
+  }
 }
 
 async function App() {
@@ -379,9 +378,38 @@ function onlog() {
   }
 }
 
-search.addEventListener("keyup",(event)=>{
-    const regx = new RegExp(event.target.value);
-})
+function searchHandler(event,Ol) {
+  if (event.key) {
+    if (event.target.value) {
+      const regx = new RegExp(`${event.target.value}`);
+      const all = Ol.querySelectorAll("li");
+      const domIdArr = [];
+      for (let task of all) {
+        if (regx.test(task.querySelector('h3').textContent)) {
+          domIdArr.push(task.id);
+        }
+      }
+      for (let li of all) {
+        if (!domIdArr.find((id) => id.toString() === li.id)) {
+          li.style.display = "none";
+        }
+      }
+    } else {
+      all = Ol.querySelectorAll("li");
+      for (let li of all) {
+        li.style.display = "block";
+      }
+    }
+  }
+}
+
+search.addEventListener("keyup", (event) => {
+  console.log(taskArr)
+ searchHandler(event,todoOl);
+ searchHandler(event,progressOl);
+ searchHandler(event,doneOl);
+ 
+});
 
 getDataFromStorage();
 App();
