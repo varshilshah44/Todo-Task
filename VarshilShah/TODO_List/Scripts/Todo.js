@@ -34,6 +34,7 @@ function allowDropFromTodo(li, domId) {
         resetStorage();
         resolve(event1);
       });
+      
     });
   });
   return dropPromise;
@@ -47,7 +48,7 @@ function allowDropFromInprogress(li, domId) {
         doneOl.append(li);
         const task = taskArr.find((item) => item.domId === domId);
         task.taskStatus = "DONE";
-        li.querySelector("#deletebtn").style.display = "none";
+        //    li.querySelector("#deletebtn").style.display = "none";
         li.querySelector("#updatebtn").style.display = "none";
         resetStorage();
         resolve(event1);
@@ -59,20 +60,12 @@ function allowDropFromInprogress(li, domId) {
 
 function deleteItem(deleteBtn) {
   let deletePromise = new Promise(function (resolve, reject) {
-    deleteBtn.addEventListener("click", (event) => {
-      resolve(event);
+    deleteBtn.addEventListener("click", (event1) => {
+      resolve(event1);
     });
   });
-  return deletePromise;
-}
 
-function updateItem(updateBtn) {
-  let updatePromise = new Promise(function (resolve, reject) {
-    updateBtn.addEventListener("click", (event) => {
-      resolve(event);
-    });
-  });
-  return updatePromise;
+  return deletePromise;
 }
 
 async function AddSubtask(taskId, subtaskcount) {
@@ -144,47 +137,61 @@ async function AddingItemintoDom(taskName, domId, maintaskname) {
     todoOl.appendChild(itemLi);
   } else if (task.taskStatus === "INPROGRESS") {
     progressOl.appendChild(itemLi);
-    // itemLi.querySelector("#deletebtn").style.display = "none";
-    // itemLi.querySelector("#updatebtn").style.display = "none";
   } else {
     itemLi.draggable = false;
     doneOl.appendChild(itemLi);
-    itemLi.querySelector("#deletebtn").style.display = "none";
     itemLi.querySelector("#updatebtn").style.display = "none";
   }
 
   const deletePromise = deleteItem(deleteBtn);
-  deletePromise.then((event) => {
+  deletePromise.then((event1) => {
     const taskIndex = taskArr.findIndex((item) => item.domId == domId);
     if (taskArr[taskIndex].taskName) {
-      for (let item of taskArr) {
-        if (item.subtaskId === taskArr[taskIndex].taskId) {
-          const subtaskIndex = taskArr.findIndex(
-            (task) => task.domId == item.domId
-          );
-          taskArr.splice(subtaskIndex, 1);
-          const deleteli = document.getElementById(item.domId);
+      const newTaskArr = taskArr.filter(
+        (item) => item.subtaskId === taskArr[taskIndex].taskId
+      );
+      for (let item of newTaskArr) {
+        const subtaskIndex = taskArr.findIndex(
+          (task) => task.domId == item.domId
+        );
+        const deleteli = document.getElementById(item.domId);
+        if (taskArr[subtaskIndex].taskStatus == "TODO") {
           todoOl.removeChild(deleteli);
-          logArr.push("Task : " + item.subtaskName + " is deleted");
+        } else if (taskArr[subtaskIndex].taskStatus == "INPROGRESS") {
+          progressOl.removeChild(deleteli);
+        } else {
+          doneOl.removeChild(deleteli);
         }
+        taskArr.splice(subtaskIndex, 1);
+        logArr.push("Task : " + item.subtaskName + " is deleted");
       }
+      if (taskArr[taskIndex].taskStatus == "TODO") {
+        todoOl.removeChild(itemLi);
+      } else if (taskArr[taskIndex].taskStatus == "INPROGRESS") {
+        progressOl.removeChild(itemLi);
+      } else {
+        doneOl.removeChild(itemLi);
+      }
+
       taskArr.splice(taskIndex, 1);
-      todoOl.removeChild(itemLi);
       logArr.push(
         "Task : " + itemLi.querySelector("h3").textContent + " is deleted"
       );
-      resetStorage();
     } else {
       logArr.push("Task : " + taskArr[taskIndex].subtaskName + " is deleted");
+      if (taskArr[taskIndex].taskStatus == "TODO") {
+        todoOl.removeChild(itemLi);
+      } else if (taskArr[taskIndex].taskStatus == "INPROGRESS") {
+        progressOl.removeChild(itemLi);
+      } else {
+        doneOl.removeChild(itemLi);
+      }
       taskArr.splice(taskIndex, 1);
-      todoOl.removeChild(itemLi);
-
-      resetStorage();
     }
+    resetStorage();
   });
 
-  const updatePromise = updateItem(updateBtn);
-  updatePromise.then((event) => {
+  updateBtn.addEventListener("click", (event) => {
     const taskIndex = taskArr.findIndex((item) => item.domId == domId);
     let newtaskName;
     if (taskArr[taskIndex].subtaskName) {
@@ -358,7 +365,6 @@ function sorting() {
 function onlog() {
   const allH4 = log.querySelectorAll("h4");
   for (let h4 of allH4) {
-    console.log(h4);
     log.removeChild(h4);
   }
   if (log.className === "log") {
@@ -378,37 +384,46 @@ function onlog() {
   }
 }
 
-function searchHandler(event,Ol) {
-  if (event.key) {
-    if (event.target.value) {
-      const regx = new RegExp(`${event.target.value}`);
-      const all = Ol.querySelectorAll("li");
-      const domIdArr = [];
-      for (let task of all) {
-        if (regx.test(task.querySelector('h3').textContent)) {
-          domIdArr.push(task.id);
+function searchHandler(event, Ol) {
+  const regx = new RegExp(`${event.target.value}`);
+  const highregx = 'high';
+  const mediumregx = 'medium';
+  const lowregx = 'low';
+  const all = Ol.querySelectorAll("li");
+  if (event.key != "Backspace") {
+    for (let task of all) {
+      if (!regx.test(task.querySelector("h3").textContent)) {
+        task.style.display = "none";
+      } 
+      if(regx.test(highregx)){
+        if(task.style.backgroundColor == "red"){
+          task.style.display = "block"
         }
       }
-      for (let li of all) {
-        if (!domIdArr.find((id) => id.toString() === li.id)) {
-          li.style.display = "none";
+      else if(regx.test(mediumregx)){
+        if(task.style.backgroundColor == "orange"){
+          task.style.display = "block"
         }
       }
-    } else {
-      all = Ol.querySelectorAll("li");
-      for (let li of all) {
-        li.style.display = "block";
+      else if(regx.test(lowregx)){
+        if(task.style.backgroundColor == "blue"){
+          task.style.display = "block"
+        }
+      }
+    }
+  } else {
+    for (let task of all) {
+      if (regx.test(task.querySelector("h3").textContent)) {
+        task.style.display = "block";
       }
     }
   }
 }
 
 search.addEventListener("keyup", (event) => {
-  console.log(taskArr)
- searchHandler(event,todoOl);
- searchHandler(event,progressOl);
- searchHandler(event,doneOl);
- 
+  searchHandler(event, todoOl);
+  searchHandler(event, progressOl);
+  searchHandler(event, doneOl);
 });
 
 getDataFromStorage();
