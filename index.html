@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="Scripts/Dom.js" defer></script>
+    <script src="Scripts/Todo.js" defer></script>
+    <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  </head>
+  <body>
+    
+    
+    <template id="template">
+      <li draggable="true" class="dd-item" >
+        <h3 class="title dd-handle">   
+        </h3>
+        <h5 style="margin-top:5px;" class="title dd-handle">  
+        </h5>
+        
+        <br><br><br> 
+
+     <button id="deletebtn" type="button" class="btn btn-default btn-sm">
+        <span class="glyphicon glyphicon-trash"></span>Delete 
+      </button>
+      <button id="updatebtn" type="button" class="btn btn-default btn-sm">
+        <span class="glyphicon glyphicon-pencil"></span>Update
+      </button>
+    </li>
+    </template>
+
+
+
+    <h2 class="heading">TODO List
+        <button onclick="onlog()" style="float: right;margin-right:10px;" id="logbtn">Display Logs</button>
+    </h2>
+    <div class="log" id="logid">
+    </div>
+    <hr />
+    <br /><br />
+    <div id="addtasks">
+      <input type="text" placeholder="Enter a Main Task" />
+    </div>
+    <div id="p1" class="mdl-progress mdl-js-progress">
+    </div>
+    <input autocomplete="off" type="search" id="search" placeholder="search">
+   
+    <div class="dd">
+      <ol id="todo" class="kanban To-do" style="position: relative;"> 
+        <div class="kanban__title" ondrag>
+          <h3>To do
+          <button id="todosort" style="float: right;">Sort</button></h3>
+          
+        </div>
+      </ol>
+      <ol id="progress" class="kanban progress" style="position: relative;">
+        <h3>In progress
+            <button id="progresssort" style="float: right;">Sort</button></h3>
+        </h3>
+       <!--  <div id="div" ondrop="drop(event)" ondragover="allowdrop(event)">
+
+        </div> -->
+      </ol>
+      <ol id="done" class="kanban Done" style="position: relative;">
+        <h3>Done<button id="donesort" style="float: right;">Sort</button></h3>
+      </ol>
+    </div><br>
+  </body>
+</html>
+<!-- <li class="dd-item" data-id="1">
+    <h3 class="title dd-handle"></h3>
+  </li>
+ -->
