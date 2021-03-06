@@ -1,4 +1,3 @@
-console.log(window.location)
 const main = document.getElementById("addtasks");
 const taskInput = main.querySelector('input');
 const template = document.getElementById("template");
