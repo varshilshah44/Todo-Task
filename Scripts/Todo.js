@@ -85,7 +85,7 @@ async function AddingItemintoDom(taskName, domId, maintaskname) {
   const task = taskArr.find((item) => item.domId === domId);
 
   itemLi.id = domId;
-  const date = new Date(task.taskTime);
+  const date = new Date(task.taskTime)
   if (maintaskname) {
     itemLi.querySelector("h3").textContent =
       "Subtask : " + taskName + "(" + maintaskname + ")";
